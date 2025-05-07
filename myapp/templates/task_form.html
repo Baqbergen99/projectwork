@@ -1,3 +1,20 @@
+<<<<<<< HEAD
+{% extends 'base.html' %}
+{% block title %}{% if view.object %}Редактировать{% else %}Добавить{% endif %} квартиру{% endblock %}
+{% block content %}
+<div class="container">
+    <h2 class="mt-4">{% if view.object %}Редактировать квартиру{% else %}Добавить квартиру{% endif %}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+    </form>
+    <div class="back-button">
+        <a href="{% url 'task-list' %}" class="btn btn-secondary mt-3">Назад</a>
+    </div>
+</div>
+{% endblock %}
+=======
 <!DOCTYPE html>
 <html>
 <head>
@@ -79,3 +96,4 @@
     </div>
 </body>
 </html>
+>>>>>>> fe2177277daf66f585193d907dca54f526a53eae

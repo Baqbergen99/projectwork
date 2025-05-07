@@ -1,3 +1,18 @@
+<<<<<<< HEAD
+{% extends 'base.html' %}
+{% block title %}Подтверждение удаления{% endblock %}
+{% block content %}
+<div class="container">
+    <h2 class="mt-4">Подтверждение удаления</h2>
+    <p>Вы уверены, что хотите удалить "{{ object.title }}"? (Создано: {{ object.created_at }})</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Да, удалить</button>
+        <a href="{% url 'task-list' %}" class="btn btn-secondary ms-2">Отмена</a>
+    </form>
+</div>
+{% endblock %}
+=======
 <!DOCTYPE html>
 <html>
 <head>
@@ -64,3 +79,4 @@
     </div>
 </body>
 </html>
+>>>>>>> fe2177277daf66f585193d907dca54f526a53eae
