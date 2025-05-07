@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>О нас</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            line-height: 1.6;
+            color: #555;
+        }
+        .back-button {
+            margin-top: 20px;
+        }
+        .back-button a {
+            text-decoration: none;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+        .back-button a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>О нашей компании</h1>
+        <p>Мы — ваш надежный партнер в мире аренды недвижимости! Более 1000 довольных клиентов уже нашли свое идеальное жилье с нашей помощью.</p>
+        <p>Мы предлагаем гарантию качества, прозрачные условия и полную поддержку на всех этапах аренды. Наши квартиры проходят тщательную проверку, чтобы вы могли чувствовать себя в безопасности и комфорте.</p>
+        <p>Наша миссия — сделать процесс аренды простым и удобным. Доверьтесь нам, и мы найдем для вас идеальный дом!</p>
+        <div class="back-button">
+            <a href="{% url 'home' %}">Вернуться на главную</a>
+        </div>
+    </div>
+</body>
+</html>
