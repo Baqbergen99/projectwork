@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Профиль{% endblock %}
+{% block content %}
+<h2 class="mt-4">Профиль пользователя</h2>
+<p>Имя: {{ user.username }}</p>
+<p>Email: {{ user.email }}</p>
+<a href="{% url 'edit-profile' %}" class="btn btn-warning">Редактировать профиль</a>
+<a href="{% url 'logout' %}" class="btn btn-danger">Выход</a>
+{% endblock %}

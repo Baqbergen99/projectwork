@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Список квартир{% endblock %}
+{% block content %}
+<div class="sort-button">
+    <a href="?sort=price" class="btn btn-primary mt-3">Сортировать по цене</a>
+</div>
+
+<div class="property-list">
+    {% for property in data %}
+        <div class="property-card" id="property-{{ property.id }}">
+            <img src="{{ property.image }}" alt="Фото квартиры">
+            <h3>{{ property.title }}</h3>
+            <p class="price">Цена: {{ property.details.price|default:"Не указано" }} т/мес</p>
+            <p>Опубликовано: {{ property.created_at|date:"d.m.Y H:i" }}</p>
+            <div class="buttons">
+                <button class="details-button" onclick="toggleDetails('details-{{ property.id }}')">Подробнее</button>
+                {% if user.is_staff %}
+                    <a href="{% url 'task-update' property.id %}" class="edit-button">Редактировать</a>
+                    <a href="{% url 'task-delete' property.id %}" class="delete-button">Удалить</a>
+                {% endif %}
+                <button class="action-button" onclick="alert('Добавлено в избранное!')">Добавить в избранное</button>
+                <button class="action-button" onclick="alert('Написать сообщение!')">Написать</button>
+            </div>
+            <div class="details" id="details-{{ property.id }}">
+                <p><strong>Цена:</strong> {{ property.details.price|default:"Не указано" }} т/мес</p>
+                <p><strong>Состояние:</strong> {{ property.details.condition|default:"Не указано" }}</p>
+                <p><strong>Комнаты:</strong> {{ property.details.rooms|default:"Не указано" }}</p>
+                <p><strong>Кому подходит:</strong> {{ property.details.suitable_for|default:"Не указано" }}</p>
+                <p><strong>Безопасность:</strong> {{ property.details.security|default:"Не указано" }}</p>
+                <p><strong>Вид из окон:</strong> {{ property.details.view|default:"Не указано" }}</p>
+                <p><strong>Балкон:</strong> {{ property.details.balcony|default:"Не указано" }}</p>
+            </div>
+        </div>
+    {% empty %}
+        <p>Нет доступных объявлений.</p>
+    {% endfor %}
+</div>
+
+<style>
+    .property-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+    }
+    .property-card {
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        width: 300px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        text-align: center;
+        position: relative;
+    }
+    .property-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+    .property-card h3 {
+        font-size: 18px;
+        margin: 10px 0;
+    }
+    .property-card p {
+        margin: 5px 0;
+        color: #555;
+    }
+    .property-card .price {
+        font-weight: bold;
+        color: #000;
+    }
+    .property-card .buttons {
+        margin-top: 10px;
+    }
+    .details-button, .edit-button, .delete-button {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 0 5px;
+        text-decoration: none;
+        color: white;
+    }
+    .details-button {
+        background-color: #28a745;
+    }
+    .details-button:hover {
+        background-color: #218838;
+    }
+    .edit-button {
+        background-color: #ffc107;
+    }
+    .edit-button:hover {
+        background-color: #e0a800;
+    }
+    .delete-button {
+        background-color: #dc3545;
+    }
+    .delete-button:hover {
+        background-color: #c82333;
+    }
+    .details {
+        display: none;
+        margin-top: 10px;
+        text-align: left;
+        background-color: #f9f9f9;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .action-button {
+        background-color: #17a2b8;
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-right: 10px;
+        margin-top: 10px;
+    }
+    .action-button:hover {
+        background-color: #138496;
+    }
+</style>
+
+<script>
+    function toggleDetails(detailsId) {
+        var details = document.getElementById(detailsId);
+        if (details.style.display === "block") {
+            details.style.display = "none";
+        } else {
+            details.style.display = "block";
+        }
+    }
+</script>
+{% endblock %}

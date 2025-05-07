@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Регистрация{% endblock %}
+{% block content %}
+<h2 class="mt-4">Регистрация</h2>
+
+{% if form.errors %}
+    <div class="alert alert-danger">
+        Пожалуйста, исправьте ошибки в форме.
+    </div>
+{% endif %}
+
+<form method="post" id="register-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="password-requirements">
+        <h5>Требования к паролю:</h5>
+        <ul>
+            <li>
+                Минимум 8 символов
+                <span class="condition-check length">
+                    {% if form.conditions.length %}
+                        ✅
+                    {% else %}
+                        ❌
+                    {% endif %}
+                </span>
+            </li>
+            <li>
+                Хотя бы одна буква
+                <span class="condition-check letter">
+                    {% if form.conditions.letter %}
+                        ✅
+                    {% else %}
+                        ❌
+                    {% endif %}
+                </span>
+            </li>
+            <li>
+                Хотя бы одна цифра
+                <span class="condition-check digit">
+                    {% if form.conditions.digit %}
+                        ✅
+                    {% else %}
+                        ❌
+                    {% endif %}
+                </span>
+            </li>
+            <li>
+                Хотя бы один специальный символ (!@#$%^&*)
+                <span class="condition-check special">
+                    {% if form.conditions.special %}
+                        ✅
+                    {% else %}
+                        ❌
+                    {% endif %}
+                </span>
+            </li>
+        </ul>
+    </div>
+    <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+</form>
+
+<style>
+    .password-requirements {
+        margin-bottom: 20px;
+    }
+    .password-requirements ul {
+        list-style: none;
+        padding-left: 0;
+    }
+    .password-requirements li {
+        margin-bottom: 5px;
+    }
+    .condition-check {
+        margin-left: 10px;
+    }
+</style>
+
+<script>
+    document.getElementById('register-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const form = this;
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Показываем уведомление об успешной регистрации
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success mt-3';
+                alertDiv.textContent = 'Регистрация прошла успешно! Вы будете перенаправлены на страницу профиля.';
+                form.parentNode.insertBefore(alertDiv, form);
+                // Перенаправляем через 2 секунды
+                setTimeout(() => {
+                    window.location.href = '{% url "profile" %}';
+                }, 2000);
+            } else {
+                // Если есть ошибки, обновляем форму
+                form.outerHTML = data.form_html;
+            }
+        });
+    });
+
+    // Динамическая проверка пароля на стороне клиента
+    document.getElementById('id_password1').addEventListener('input', function() {
+        const password = this.value;
+        const lengthCheck = password.length >= 8;
+        const letterCheck = /[a-zA-Z]/.test(password);
+        const digitCheck = /\d/.test(password);
+        const specialCheck = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+        document.querySelector('.condition-check.length').innerHTML = lengthCheck ? '✅' : '❌';
+        document.querySelector('.condition-check.letter').innerHTML = letterCheck ? '✅' : '❌';
+        document.querySelector('.condition-check.digit').innerHTML = digitCheck ? '✅' : '❌';
+        document.querySelector('.condition-check.special').innerHTML = specialCheck ? '✅' : '❌';
+    });
+</script>
+{% endblock %}

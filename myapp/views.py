@@ -1,5 +1,19 @@
+<<<<<<< Updated upstream
 from django.shortcuts import render
 from .models import Task
+=======
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.shortcuts import render, redirect
+from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+from .models import Task
+from .forms import RegisterForm, UpdateProfileForm, TaskForm
+>>>>>>> Stashed changes
 import json
 import logging
 
@@ -99,6 +113,45 @@ def home(request):
         properties_data.append(prop_dict)
 
     return render(request, 'home.html', {'data': properties_data})
+
+def register(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
+            return redirect('profile')
+        else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                form_html = render_to_string('register.html', {'form': form}, request=request)
+                return JsonResponse({'success': False, 'form_html': form_html})
+    else:
+        form = RegisterForm()
+    return render(request, 'register.html', {'form': form})
+
+class CustomLoginView(LoginView):
+    template_name = 'login.html'
+    redirect_authenticated_user = True
+
+class CustomLogoutView(LogoutView):
+    next_page = 'login'
+
+@login_required
+def profile(request):
+    return render(request, 'profile.html')
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = UpdateProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+    else:
+        form = UpdateProfileForm(instance=request.user)
+    return render(request, 'edit_profile.html', {'form': form})
 
 def about(request):
     return render(request, 'about.html')
