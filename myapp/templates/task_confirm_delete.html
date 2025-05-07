@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends 'base.html' %}
 {% block title %}Подтверждение удаления{% endblock %}
 {% block content %}
@@ -11,3 +12,71 @@
     </form>
 </div>
 {% endblock %}
+=======
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Аренда недвижимости - Подтверждение удаления</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h2 {
+            color: #333;
+        }
+        p {
+            line-height: 1.6;
+            color: #555;
+        }
+        form {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #c82333;
+        }
+        .cancel-button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .cancel-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Подтверждение удаления</h2>
+        <p>Вы уверены, что хотите удалить "{{ object.title }}"? (Создано: {{ object.created_at }})</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit">Да, удалить</button>
+            <a href="{% url 'task-list' %}" class="cancel-button">Отмена</a>
+        </form>
+    </div>
+</body>
+</html>
+>>>>>>> fe2177277daf66f585193d907dca54f526a53eae
