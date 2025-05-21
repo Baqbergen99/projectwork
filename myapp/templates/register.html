@@ -3,15 +3,20 @@
 {% block content %}
 <h2 class="mt-4">Регистрация</h2>
 
-{% if form.errors %}
+{% if form.errors or message %}
     <div class="alert alert-danger">
-        Пожалуйста, исправьте ошибки в форме.
+        {{ message|default:"Пожалуйста, исправьте ошибки в форме." }}
+        {% for error in form.non_field_errors %}
+            {{ error }}
+        {% endfor %}
     </div>
 {% endif %}
 
 <form method="post" id="register-form">
     {% csrf_token %}
     {{ form.as_p }}
+    <p><label for="id_email">Email (обязательно для активации):</label>
+       <input type="email" name="email" id="id_email" required></p>
     <div class="password-requirements">
         <h5>Требования к паролю:</h5>
         <ul>
@@ -60,6 +65,12 @@
     <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
 </form>
 
+{% if message and not form.errors %}
+    <div class="alert alert-success mt-3">
+        {{ message }}
+    </div>
+{% endif %}
+
 <style>
     .password-requirements {
         margin-bottom: 20px;
@@ -90,34 +101,47 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Показываем уведомление об успешной регистрации
                 const alertDiv = document.createElement('div');
                 alertDiv.className = 'alert alert-success mt-3';
-                alertDiv.textContent = 'Регистрация прошла успешно! Вы будете перенаправлены на страницу профиля.';
+                alertDiv.textContent = data.message;
                 form.parentNode.insertBefore(alertDiv, form);
-                // Перенаправляем через 2 секунды
+                form.style.display = 'none';  // Скрываем форму
                 setTimeout(() => {
-                    window.location.href = '{% url "profile" %}';
-                }, 2000);
+                    window.location.href = '{% url "login" %}';
+                }, 3000);
             } else {
-                // Если есть ошибки, обновляем форму
-                form.outerHTML = data.form_html;
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger mt-3';
+                alertDiv.textContent = data.message || 'Произошла ошибка при регистрации.';
+                form.parentNode.insertBefore(alertDiv, form);
+                form.outerHTML = data.form_html || form.outerHTML;  // Обновляем форму при ошибке
             }
+        })
+        .catch(error => {
+            console.error('Ошибка сети:', error);
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger mt-3';
+            alertDiv.textContent = 'Ошибка соединения. Попробуйте позже.';
+            form.parentNode.insertBefore(alertDiv, form);
         });
     });
 
-    // Динамическая проверка пароля на стороне клиента
-    document.getElementById('id_password1').addEventListener('input', function() {
-        const password = this.value;
-        const lengthCheck = password.length >= 8;
-        const letterCheck = /[a-zA-Z]/.test(password);
-        const digitCheck = /\d/.test(password);
-        const specialCheck = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const passwordField = document.getElementById('id_password1');
+    if (passwordField) {
+        passwordField.addEventListener('input', function() {
+            const password = this.value;
+            const lengthCheck = password.length >= 8;
+            const letterCheck = /[a-zA-Z]/.test(password);
+            const digitCheck = /\d/.test(password);
+            const specialCheck = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
-        document.querySelector('.condition-check.length').innerHTML = lengthCheck ? '✅' : '❌';
-        document.querySelector('.condition-check.letter').innerHTML = letterCheck ? '✅' : '❌';
-        document.querySelector('.condition-check.digit').innerHTML = digitCheck ? '✅' : '❌';
-        document.querySelector('.condition-check.special').innerHTML = specialCheck ? '✅' : '❌';
-    });
+            document.querySelector('.condition-check.length').innerHTML = lengthCheck ? '✅' : '❌';
+            document.querySelector('.condition-check.letter').innerHTML = letterCheck ? '✅' : '❌';
+            document.querySelector('.condition-check.digit').innerHTML = digitCheck ? '✅' : '❌';
+            document.querySelector('.condition-check.special').innerHTML = specialCheck ? '✅' : '❌';
+        });
+    } else {
+        console.error('Поле пароля с id="id_password1" не найдено');
+    }
 </script>
 {% endblock %}
