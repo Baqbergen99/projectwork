@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'myapp',
 
 
@@ -130,8 +131,20 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/profile/'
 LOGOUT_REDIRECT_URL = '/login/'
 
+# Настройки для отправки email через Mail.ru
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.mail.ru'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'bahabai55015@mail.ru'  #Mail.ru адрес
+EMAIL_HOST_PASSWORD = 'Ptm1gFFgGpxsBcSunK3d'  #пароль приложения Mail.ru
+DEFAULT_FROM_EMAIL = 'bahabai55015@mail.ru' 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTHENTICATION_BACKENDS = [
+    'myapp.authentication.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]

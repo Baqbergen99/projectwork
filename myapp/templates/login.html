@@ -2,9 +2,21 @@
 {% block title %}Вход{% endblock %}
 {% block content %}
 <h2 class="mt-4">Вход</h2>
+
+{% if form.errors %}
+    <div class="alert alert-danger">
+        Неверный email или пароль.
+    </div>
+{% endif %}
+
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-success">Войти</button>
+    <p><label for="id_username">Email:</label>
+       <input type="email" name="username" id="id_username" required></p>
+    <p><label for="id_password">Пароль:</label>
+       <input type="password" name="password" id="id_password" required></p>
+    <button type="submit" class="btn btn-primary">Войти</button>
 </form>
+
+<p class="mt-3">Нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь</a>.</p>
 {% endblock %}

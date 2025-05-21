@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-from django.shortcuts import render
-from .models import Task
-=======
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
@@ -10,20 +5,22 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
-from .models import Task
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import Task, ActivationToken
 from .forms import RegisterForm, UpdateProfileForm, TaskForm
->>>>>>> Stashed changes
-=======
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
-from django.contrib.auth.mixins import UserPassesTestMixin
-from django.shortcuts import render
-from .models import Task
-from .forms import TaskForm
->>>>>>> fe2177277daf66f585193d907dca54f526a53eae
 import json
+import uuid
+import logging
+
+from rest_framework import viewsets
+from .serializers import TaskSerializer
+
+# Настройка логирования
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class TaskListView(ListView):
     model = Task
@@ -85,29 +82,93 @@ class TaskDeleteView(AdminRequiredMixin, DeleteView):
     template_name = 'task_confirm_delete.html'
     success_url = reverse_lazy('task-list')
 
+class TaskViewSet(viewsets.ModelViewSet):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+
 def register(request):
+    logger.debug("Начало функции register")
     if request.method == 'POST':
+        logger.debug("Получен POST-запрос")
         form = RegisterForm(request.POST)
         if form.is_valid():
+            logger.debug("Форма валидна")
+            # Создаём и сохраняем пользователя
             user = form.save()
-            login(request, user)
+            user.is_active = False  # Отключаем до активации
+            # Сохраняем email в модели User
+            email = request.POST.get('email', '')
+            if email:
+                user.email = email
+            user.save()
+            # Создаём токен активации
+            token = ActivationToken.objects.create(user=user)
+            logger.debug(f"Создан токен: {token.token}")
+            # Формируем ссылку для активации
+            activation_link = request.build_absolute_uri(
+                reverse_lazy('activate', kwargs={'token': str(token.token)})
+            )
+            logger.debug(f"Сформирована ссылка: {activation_link}")
+            # Отправляем email (опционально, если email указан)
+            if email:
+                subject = 'Подтверждение регистрации на сайте Аренда недвижимости'
+                message = f'Здравствуйте, {user.username}!\n\n' \
+                          f'Чтобы активировать ваш аккаунт, перейдите по ссылке:\n' \
+                          f'{activation_link}\n\n' \
+                          f'Если это не вы, просто проигнорируйте это письмо.'
+                try:
+                    logger.debug("Попытка отправки email")
+                    send_mail(
+                        subject,
+                        message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [email],
+                        fail_silently=True,
+                    )
+                    logger.debug("Email успешно отправлен или проигнорирован")
+                except Exception as e:
+                    logger.error(f"Ошибка отправки email: {str(e)}")
+            response_data = {
+                'success': True,
+                'message': 'Регистрация начата! Пожалуйста, активируйте аккаунт (если указали email, проверьте почту).'
+            }
+            logger.debug(f"Ответ: {response_data}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({'success': True})
-            return redirect('profile')
+                return JsonResponse(response_data)
+            return render(request, 'activation_pending.html', {'username': user.username, 'message': response_data['message']})
         else:
+            logger.debug("Форма невалидна")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 form_html = render_to_string('register.html', {'form': form}, request=request)
                 return JsonResponse({'success': False, 'form_html': form_html})
     else:
+        logger.debug("Получен GET-запрос")
         form = RegisterForm()
     return render(request, 'register.html', {'form': form})
+
+def activate_account(request, token):
+    try:
+        activation_token = ActivationToken.objects.get(token=token, is_used=False)
+        user = activation_token.user
+        if user:
+            user.is_active = True
+            user.save()
+            activation_token.is_used = True
+            activation_token.save()
+            login(request, user)
+            return redirect('profile')
+        return HttpResponse("Ошибка активации: пользователь не найден.", status=400)
+    except ActivationToken.DoesNotExist:
+        return HttpResponse("Недействительная или уже использованная ссылка для активации.", status=400)
+    except Exception as e:
+        return HttpResponse(f"Ошибка активации: {str(e)}", status=400)
 
 class CustomLoginView(LoginView):
     template_name = 'login.html'
     redirect_authenticated_user = True
 
 class CustomLogoutView(LogoutView):
-    next_page = 'login'
+    next_page = reverse_lazy('login')
 
 @login_required
 def profile(request):
