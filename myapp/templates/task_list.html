@@ -1,38 +1,54 @@
 {% extends 'base.html' %}
-{% block title %}Список квартир{% endblock %}
+{% block title %}
+    {% if CURRENT_LANGUAGE == 'ru' %}Список квартир
+    {% elif CURRENT_LANGUAGE == 'en' %}Apartment List
+    {% elif CURRENT_LANGUAGE == 'kk' %}Пәтерлер тізімі
+    {% else %}Список квартир{% endif %}
+{% endblock %}
 {% block content %}
 <div class="sort-button">
-    <a href="?sort=price" class="btn btn-primary mt-3">Сортировать по цене</a>
+    <a href="?sort=price" class="btn btn-primary mt-3">{{ translations.sort }} {{ translations.price|lower }}</a>
 </div>
 
 <div class="property-list">
     {% for property in data %}
         <div class="property-card" id="property-{{ property.id }}">
-            <img src="{{ property.image }}" alt="Фото квартиры">
+            <img src="{{ property.image }}" alt="{{ translations.no_photo }}">
             <h3>{{ property.title }}</h3>
-            <p class="price">Цена: {{ property.details.price|default:"Не указано" }} т/мес</p>
-            <p>Опубликовано: {{ property.created_at|date:"d.m.Y H:i" }}</p>
+            <p class="price">{{ translations.price }}: {{ property.details.price|default:translations.not_specified }} {{ translations.per_month }}</p>
+            <p>
+                {% if CURRENT_LANGUAGE == 'ru' %}Опубликовано: 
+                {% elif CURRENT_LANGUAGE == 'en' %}Published: 
+                {% elif CURRENT_LANGUAGE == 'kk' %}Жарияланған: 
+                {% else %}Опубликовано: {% endif %}
+                {{ property.created_at|date:"d.m.Y H:i" }}
+            </p>
             <div class="buttons">
-                <button class="details-button" onclick="toggleDetails('details-{{ property.id }}')">Подробнее</button>
+                <button class="details-button" onclick="toggleDetails('details-{{ property.id }}')">{{ translations.details }}</button>
                 {% if user.is_staff %}
-                    <a href="{% url 'task-update' property.id %}" class="edit-button">Редактировать</a>
-                    <a href="{% url 'task-delete' property.id %}" class="delete-button">Удалить</a>
+                    <a href="{% url 'task-update' property.id %}" class="edit-button">{{ translations.edit }}</a>
+                    <a href="{% url 'task-delete' property.id %}" class="delete-button">{{ translations.delete }}</a>
                 {% endif %}
-                <button class="action-button" onclick="alert('Добавлено в избранное!')">Добавить в избранное</button>
-                <button class="action-button" onclick="alert('Написать сообщение!')">Написать</button>
+                <button class="action-button" onclick="alert('Добавлено в избранное!')">{{ translations.add }}</button>
+                <button class="action-button" onclick="alert('Написать сообщение!')">{{ translations.write }}</button>
             </div>
             <div class="details" id="details-{{ property.id }}">
-                <p><strong>Цена:</strong> {{ property.details.price|default:"Не указано" }} т/мес</p>
-                <p><strong>Состояние:</strong> {{ property.details.condition|default:"Не указано" }}</p>
-                <p><strong>Комнаты:</strong> {{ property.details.rooms|default:"Не указано" }}</p>
-                <p><strong>Кому подходит:</strong> {{ property.details.suitable_for|default:"Не указано" }}</p>
-                <p><strong>Безопасность:</strong> {{ property.details.security|default:"Не указано" }}</p>
-                <p><strong>Вид из окон:</strong> {{ property.details.view|default:"Не указано" }}</p>
-                <p><strong>Балкон:</strong> {{ property.details.balcony|default:"Не указано" }}</p>
+                <p><strong>{{ translations.price }}:</strong> {{ property.details.price|default:translations.not_specified }} {{ translations.per_month }}</p>
+                <p><strong>{{ translations.condition }}:</strong> {{ property.details.condition|default:translations.not_specified }}</p>
+                <p><strong>{{ translations.rooms }}:</strong> {{ property.details.rooms|default:translations.not_specified }}</p>
+                <p><strong>{{ translations.suitable_for }}:</strong> {{ property.details.suitable_for|default:translations.not_specified }}</p>
+                <p><strong>{{ translations.security }}:</strong> {{ property.details.security|default:translations.not_specified }}</p>
+                <p><strong>{{ translations.view }}:</strong> {{ property.details.view|default:translations.not_specified }}</p>
+                <p><strong>{{ translations.balcony }}:</strong> {{ property.details.balcony|default:translations.not_specified }}</p>
             </div>
         </div>
     {% empty %}
-        <p>Нет доступных объявлений.</p>
+        <p>
+            {% if CURRENT_LANGUAGE == 'ru' %}Нет доступных объявлений.
+            {% elif CURRENT_LANGUAGE == 'en' %}No available listings.
+            {% elif CURRENT_LANGUAGE == 'kk' %}Қол жетімді хабарландырулар жоқ.
+            {% else %}Нет доступных объявлений.{% endif %}
+        </p>
     {% endfor %}
 </div>
 

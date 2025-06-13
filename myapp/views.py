@@ -9,8 +9,11 @@ from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils import translation
+from django.utils.translation import gettext as _
 from .models import Task, ActivationToken
 from .forms import RegisterForm, UpdateProfileForm, TaskForm
+from .auto_translate import translate_text
 import json
 import uuid
 import logging
@@ -45,20 +48,58 @@ class TaskListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         properties_data = []
+        
+        # Получаем текущий язык
+        current_language = self.request.session.get('django_language', settings.LANGUAGE_CODE)
+        
+        # Получаем переводы
+        from .translations import TRANSLATIONS
+        translations = TRANSLATIONS.get(current_language, TRANSLATIONS['ru'])
+        
         for item in context['data']:
             try:
                 details = json.loads(item.description) if item.description else {}
             except json.JSONDecodeError:
                 details = {}
+                
+            # Переводим заголовок в зависимости от языка
+            title = item.title
+            if current_language != 'ru':
+                title = translate_text(title, current_language)
+            
+            # Переводим все детали квартиры
+            translated_details = {}
+            for key, value in details.items():
+                if isinstance(value, str) and value:
+                    # Специальные случаи для известных значений
+                    if key == 'suitable_for' and value == 'Один человек':
+                        translated_details[key] = translations.get('one_person', value)
+                    elif current_language != 'ru':
+                        # Автоматический перевод для остальных значений
+                        translated_details[key] = translate_text(value, current_language)
+                    else:
+                        translated_details[key] = value
+                else:
+                    translated_details[key] = value
+                
+            # Создаем словарь с данными о квартире
             prop_dict = {
                 "id": item.id,
-                "title": item.title,
-                "details": details,
+                "title": title,
+                "details": translated_details,
                 "created_at": item.created_at,
-                "image": item.image_url if item.image_url else "https://via.placeholder.com/300x200?text=Нет фото"
+                "image": item.image_url if item.image_url else f"https://via.placeholder.com/300x200?text={translations['no_photo']}"
             }
             properties_data.append(prop_dict)
+            
         context['data'] = properties_data
+        
+        # Добавляем текущий язык в контекст
+        context['CURRENT_LANGUAGE'] = current_language
+        
+        # Добавляем переводы кнопок и текстов
+        context['translations'] = translations
+        
         return context
 
 class AdminRequiredMixin(UserPassesTestMixin):
@@ -88,9 +129,20 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 def register(request):
     logger.debug("Начало функции register")
+    
+    # Получаем текущий язык из сессии
+    current_language = request.session.get('django_language', settings.LANGUAGE_CODE)
+    
+    # Получаем переводы для текущего языка
+    from .translations import TRANSLATIONS
+    translations = TRANSLATIONS.get(current_language, TRANSLATIONS['ru'])
+    
     if request.method == 'POST':
         logger.debug("Получен POST-запрос")
         form = RegisterForm(request.POST)
+        # Добавляем request в форму для доступа к языковым настройкам
+        form.request = request
+        
         if form.is_valid():
             logger.debug("Форма валидна")
             # Создаём и сохраняем пользователя
@@ -111,11 +163,32 @@ def register(request):
             logger.debug(f"Сформирована ссылка: {activation_link}")
             # Отправляем email (опционально, если email указан)
             if email:
-                subject = 'Подтверждение регистрации на сайте Аренда недвижимости'
-                message = f'Здравствуйте, {user.username}!\n\n' \
-                          f'Чтобы активировать ваш аккаунт, перейдите по ссылке:\n' \
-                          f'{activation_link}\n\n' \
-                          f'Если это не вы, просто проигнорируйте это письмо.'
+                # Выбираем тему письма в зависимости от языка
+                if current_language == 'ru':
+                    subject = 'Подтверждение регистрации на сайте Аренда недвижимости'
+                    message = f'Здравствуйте, {user.username}!\n\n' \
+                              f'Чтобы активировать ваш аккаунт, перейдите по ссылке:\n' \
+                              f'{activation_link}\n\n' \
+                              f'Если это не вы, просто проигнорируйте это письмо.'
+                elif current_language == 'en':
+                    subject = 'Registration confirmation on Property Rental website'
+                    message = f'Hello, {user.username}!\n\n' \
+                              f'To activate your account, please follow this link:\n' \
+                              f'{activation_link}\n\n' \
+                              f'If this was not you, please ignore this email.'
+                elif current_language == 'kk':
+                    subject = 'Жылжымайтын мүлікті жалға алу сайтында тіркеуді растау'
+                    message = f'Сәлеметсіз бе, {user.username}!\n\n' \
+                              f'Аккаунтыңызды белсендіру үшін осы сілтемеге өтіңіз:\n' \
+                              f'{activation_link}\n\n' \
+                              f'Егер бұл сіз болмасаңыз, бұл хатты елемеңіз.'
+                else:
+                    subject = 'Подтверждение регистрации на сайте Аренда недвижимости'
+                    message = f'Здравствуйте, {user.username}!\n\n' \
+                              f'Чтобы активировать ваш аккаунт, перейдите по ссылке:\n' \
+                              f'{activation_link}\n\n' \
+                              f'Если это не вы, просто проигнорируйте это письмо.'
+                
                 try:
                     logger.debug("Попытка отправки email")
                     send_mail(
@@ -128,23 +201,50 @@ def register(request):
                     logger.debug("Email успешно отправлен или проигнорирован")
                 except Exception as e:
                     logger.error(f"Ошибка отправки email: {str(e)}")
+            
+            # Выбираем сообщение об успешной регистрации в зависимости от языка
+            if current_language == 'ru':
+                success_message = 'Регистрация начата! Пожалуйста, активируйте аккаунт (если указали email, проверьте почту).'
+            elif current_language == 'en':
+                success_message = 'Registration started! Please activate your account (if you provided an email, check your inbox).'
+            elif current_language == 'kk':
+                success_message = 'Тіркеу басталды! Аккаунтыңызды белсендіріңіз (егер электрондық поштаңызды көрсетсеңіз, поштаңызды тексеріңіз).'
+            else:
+                success_message = 'Регистрация начата! Пожалуйста, активируйте аккаунт (если указали email, проверьте почту).'
+            
             response_data = {
                 'success': True,
-                'message': 'Регистрация начата! Пожалуйста, активируйте аккаунт (если указали email, проверьте почту).'
+                'message': success_message
             }
             logger.debug(f"Ответ: {response_data}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse(response_data)
-            return render(request, 'activation_pending.html', {'username': user.username, 'message': response_data['message']})
+            return render(request, 'activation_pending.html', {
+                'username': user.username, 
+                'message': response_data['message'],
+                'CURRENT_LANGUAGE': current_language,
+                'translations': translations
+            })
         else:
             logger.debug("Форма невалидна")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                form_html = render_to_string('register.html', {'form': form}, request=request)
+                form_html = render_to_string('register.html', {
+                    'form': form,
+                    'CURRENT_LANGUAGE': current_language,
+                    'translations': translations
+                }, request=request)
                 return JsonResponse({'success': False, 'form_html': form_html})
     else:
         logger.debug("Получен GET-запрос")
         form = RegisterForm()
-    return render(request, 'register.html', {'form': form})
+        # Добавляем request в форму для доступа к языковым настройкам
+        form.request = request
+    
+    return render(request, 'register.html', {
+        'form': form,
+        'CURRENT_LANGUAGE': current_language,
+        'translations': translations
+    })
 
 def activate_account(request, token):
     try:
@@ -166,6 +266,18 @@ def activate_account(request, token):
 class CustomLoginView(LoginView):
     template_name = 'login.html'
     redirect_authenticated_user = True
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Получаем текущий язык из сессии
+        current_language = self.request.session.get('django_language', settings.LANGUAGE_CODE)
+        context['CURRENT_LANGUAGE'] = current_language
+        
+        # Добавляем переводы
+        from .translations import TRANSLATIONS
+        context['translations'] = TRANSLATIONS.get(current_language, TRANSLATIONS['ru'])
+        
+        return context
 
 class CustomLogoutView(LogoutView):
     next_page = reverse_lazy('login')
@@ -186,4 +298,53 @@ def edit_profile(request):
     return render(request, 'edit_profile.html', {'form': form})
 
 def about(request):
-    return render(request, 'about.html')
+    # Получаем текущий язык из сессии
+    current_language = request.session.get('django_language', settings.LANGUAGE_CODE)
+    
+    # Добавляем переводы кнопок и текстов
+    from .translations import TRANSLATIONS
+    translations = TRANSLATIONS.get(current_language, TRANSLATIONS['ru'])
+    
+    return render(request, 'about.html', {
+        'CURRENT_LANGUAGE': current_language,
+        'translations': translations
+    })
+
+def change_language(request, language_code):
+    """
+    Изменяет язык интерфейса и перенаправляет на предыдущую страницу.
+    """
+    # Получаем URL предыдущей страницы или главную страницу
+    next_url = request.META.get('HTTP_REFERER', '/')
+    
+    # Проверяем, что язык допустимый
+    if language_code in [lang[0] for lang in settings.LANGUAGES]:
+        # Устанавливаем язык в сессии напрямую
+        request.session['django_language'] = language_code
+        request.session['CURRENT_LANGUAGE'] = language_code
+        # Принудительно сохраняем сессию
+        request.session.save()
+    
+    # Добавляем параметр к URL для обновления страницы
+    if '?' in next_url:
+        next_url += f'&lang_changed={language_code}'
+    else:
+        next_url += f'?lang_changed={language_code}'
+    
+    # Перенаправляем на предыдущую страницу с параметром
+    return redirect(next_url)
+
+
+def translate_view(request):
+    """
+    Представление для обработки AJAX-запросов на перевод текста.
+    """
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        text = request.POST.get('text', '')
+        target_language = request.POST.get('language', 'en')
+        
+        translated = translate_text(text, target_language)
+        
+        return JsonResponse({'translated': translated})
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)

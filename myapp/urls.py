@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import TaskListView, TaskCreateView, TaskUpdateView, TaskDeleteView, about, register, profile, edit_profile, activate_account, CustomLoginView as LoginView, CustomLogoutView as LogoutView
+from .views import TaskListView, TaskCreateView, TaskUpdateView, TaskDeleteView, about, register, profile, edit_profile, activate_account, CustomLoginView as LoginView, CustomLogoutView as LogoutView, change_language, translate_view
 
 urlpatterns = [
     path('', TaskListView.as_view(), name='task-list'),
@@ -13,4 +13,6 @@ urlpatterns = [
     path('profile/', profile, name='profile'),
     path('profile/edit/', edit_profile, name='edit-profile'),
     path('activate/<uuid:token>/', activate_account, name='activate'),
+    path('change-language/<str:language_code>/', change_language, name='change_language'),
+    path('translate/', translate_view, name='translate'),
 ]

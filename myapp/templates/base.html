@@ -1,7 +1,8 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Аренда недвижимости - {% block title %}{% endblock %}</title>
+    <title>{% if CURRENT_LANGUAGE == 'ru' %}Аренда недвижимости{% elif CURRENT_LANGUAGE == 'en' %}Property Rental{% elif CURRENT_LANGUAGE == 'kk' %}Жылжымайтын мүлікті жалға алу{% else %}Аренда недвижимости{% endif %} - {% block title %}{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -13,32 +14,109 @@
         .profile-dropdown {
             margin-left: auto;
         }
+        .language-selector {
+            margin-left: 15px;
+        }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'task-list' %}">Аренда недвижимости</a>
+            <a class="navbar-brand" href="{% url 'task-list' %}">
+                {% if CURRENT_LANGUAGE == 'ru' %}Аренда недвижимости
+                {% elif CURRENT_LANGUAGE == 'en' %}Property Rental
+                {% elif CURRENT_LANGUAGE == 'kk' %}Жылжымайтын мүлікті жалға алу
+                {% else %}Аренда недвижимости{% endif %}
+            </a>
             <div class="navbar-nav">
-                <a class="nav-link" href="{% url 'about' %}">О нас</a>
+                <a class="nav-link" href="{% url 'about' %}">
+                    {% if CURRENT_LANGUAGE == 'ru' %}О нас
+                    {% elif CURRENT_LANGUAGE == 'en' %}About Us
+                    {% elif CURRENT_LANGUAGE == 'kk' %}Біз туралы
+                    {% else %}О нас{% endif %}
+                </a>
                 {% if user.is_authenticated %}
                     {% if user.is_staff %}
-                        <a class="nav-link" href="{% url 'task-create' %}">Добавить квартиру</a>
+                        <a class="nav-link" href="{% url 'task-create' %}">
+                            {% if CURRENT_LANGUAGE == 'ru' %}Добавить квартиру
+                            {% elif CURRENT_LANGUAGE == 'en' %}Add Apartment
+                            {% elif CURRENT_LANGUAGE == 'kk' %}Пәтер қосу
+                            {% else %}Добавить квартиру{% endif %}
+                        </a>
                     {% endif %}
                 {% else %}
-                    <a class="nav-link" href="{% url 'register' %}">Регистрация</a>
-                    <a class="nav-link" href="{% url 'login' %}">Вход</a>
+                    <a class="nav-link" href="{% url 'register' %}">
+                        {% if CURRENT_LANGUAGE == 'ru' %}Регистрация
+                        {% elif CURRENT_LANGUAGE == 'en' %}Register
+                        {% elif CURRENT_LANGUAGE == 'kk' %}Тіркелу
+                        {% else %}Регистрация{% endif %}
+                    </a>
+                    <a class="nav-link" href="{% url 'login' %}">
+                        {% if CURRENT_LANGUAGE == 'ru' %}Вход
+                        {% elif CURRENT_LANGUAGE == 'en' %}Login
+                        {% elif CURRENT_LANGUAGE == 'kk' %}Кіру
+                        {% else %}Вход{% endif %}
+                    </a>
                 {% endif %}
             </div>
+            
+            <!-- Переключатель языков -->
+            <div class="language-selector dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if CURRENT_LANGUAGE == 'ru' %}
+                        🇷🇺 Русский
+                    {% elif CURRENT_LANGUAGE == 'en' %}
+                        🇬🇧 English
+                    {% elif CURRENT_LANGUAGE == 'kk' %}
+                        🇰🇿 Қазақша
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                    <li>
+                        <form action="{% url 'change_language' 'ru' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item">🇷🇺 Русский</button>
+                        </form>
+                    </li>
+                    <li>
+                        <form action="{% url 'change_language' 'en' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item">🇬🇧 English</button>
+                        </form>
+                    </li>
+                    <li>
+                        <form action="{% url 'change_language' 'kk' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item">🇰🇿 Қазақша</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+            
             {% if user.is_authenticated %}
                 <div class="profile-dropdown dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         {{ user.username }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                        <li><a class="dropdown-item" href="{% url 'profile' %}">Профиль</a></li>
-                        <li><a class="dropdown-item" href="{% url 'edit-profile' %}">Редактировать профиль</a></li>
-                        <li><a class="dropdown-item" href="{% url 'logout' %}">Выход</a></li>
+                        <li><a class="dropdown-item" href="{% url 'profile' %}">
+                            {% if CURRENT_LANGUAGE == 'ru' %}Профиль
+                            {% elif CURRENT_LANGUAGE == 'en' %}Profile
+                            {% elif CURRENT_LANGUAGE == 'kk' %}Профиль
+                            {% else %}Профиль{% endif %}
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'edit-profile' %}">
+                            {% if CURRENT_LANGUAGE == 'ru' %}Редактировать профиль
+                            {% elif CURRENT_LANGUAGE == 'en' %}Edit Profile
+                            {% elif CURRENT_LANGUAGE == 'kk' %}Профильді өңдеу
+                            {% else %}Редактировать профиль{% endif %}
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}">
+                            {% if CURRENT_LANGUAGE == 'ru' %}Выход
+                            {% elif CURRENT_LANGUAGE == 'en' %}Logout
+                            {% elif CURRENT_LANGUAGE == 'kk' %}Шығу
+                            {% else %}Выход{% endif %}
+                        </a></li>
                     </ul>
                 </div>
             {% endif %}
@@ -48,5 +126,41 @@
         {% block content %}{% endblock %}
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Функция для перевода текста через AJAX
+        function translateText(text, language, callback) {
+            const formData = new FormData();
+            formData.append('text', text);
+            formData.append('language', language);
+            
+            fetch('{% url "translate" %}', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.translated) {
+                    callback(data.translated);
+                }
+            })
+            .catch(error => console.error('Ошибка перевода:', error));
+        }
+        
+        // Обработчики для кнопок переключения языка
+        document.querySelectorAll('.language-selector a').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                // Язык уже будет изменен через серверный обработчик
+                // Здесь можно добавить дополнительную логику клиентского перевода
+                localStorage.setItem('preferredLanguage', this.href.split('/').pop());
+            });
+        });
+    });
+    </script>
 </body>
 </html>

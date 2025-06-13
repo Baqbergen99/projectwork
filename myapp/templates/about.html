@@ -1,13 +1,44 @@
 {% extends 'base.html' %}
-{% block title %}О нас{% endblock %}
+{% block title %}
+    {% if CURRENT_LANGUAGE == 'ru' %}О нас
+    {% elif CURRENT_LANGUAGE == 'en' %}About Us
+    {% elif CURRENT_LANGUAGE == 'kk' %}Біз туралы
+    {% else %}О нас{% endif %}
+{% endblock %}
 {% block content %}
 <div class="container">
-    <h1 class="mt-4">О нашей компании</h1>
-    <p>Мы — ваш надежный партнер в мире аренды недвижимости! Более 1000 довольных клиентов уже нашли свое идеальное жилье с нашей помощью.</p>
-    <p>Мы предлагаем гарантию качества, прозрачные условия и полную поддержку на всех этапах аренды. Наши квартиры проходят тщательную проверку, чтобы вы могли чувствовать себя в безопасности и комфорте.</p>
-    <p>Наша миссия — сделать процесс аренды простым и удобным. Доверьтесь нам, и мы найдем для вас идеальный дом!</p>
+    <h1 class="mt-4">
+        {% if CURRENT_LANGUAGE == 'ru' %}О нашей компании
+        {% elif CURRENT_LANGUAGE == 'en' %}About Our Company
+        {% elif CURRENT_LANGUAGE == 'kk' %}Біздің компания туралы
+        {% else %}О нашей компании{% endif %}
+    </h1>
+    
+    {% if CURRENT_LANGUAGE == 'ru' %}
+        <p>Мы — ваш надежный партнер в мире аренды недвижимости! Более 1000 довольных клиентов уже нашли свое идеальное жилье с нашей помощью.</p>
+        <p>Мы предлагаем гарантию качества, прозрачные условия и полную поддержку на всех этапах аренды. Наши квартиры проходят тщательную проверку, чтобы вы могли чувствовать себя в безопасности и комфорте.</p>
+        <p>Наша миссия — сделать процесс аренды простым и удобным. Доверьтесь нам, и мы найдем для вас идеальный дом!</p>
+    {% elif CURRENT_LANGUAGE == 'en' %}
+        <p>We are your reliable partner in the world of property rental! More than 1000 satisfied customers have already found their perfect housing with our help.</p>
+        <p>We offer quality guarantee, transparent conditions, and full support at all stages of rental. Our apartments undergo thorough inspection so that you can feel safe and comfortable.</p>
+        <p>Our mission is to make the rental process simple and convenient. Trust us, and we will find the perfect home for you!</p>
+    {% elif CURRENT_LANGUAGE == 'kk' %}
+        <p>Біз жылжымайтын мүлікті жалға алу әлеміндегі сенімді серіктеспіз! 1000-нан астам риза клиенттер біздің көмегімізбен өздерінің тамаша тұрғын үйін тапты.</p>
+        <p>Біз сапа кепілдігін, ашық шарттарды және жалға алудың барлық кезеңдерінде толық қолдауды ұсынамыз. Біздің пәтерлер сіз қауіпсіз және жайлы сезіну үшін мұқият тексеруден өтеді.</p>
+        <p>Біздің миссиямыз - жалға алу процесін қарапайым және ыңғайлы ету. Бізге сеніңіз, және біз сіз үшін тамаша үй табамыз!</p>
+    {% else %}
+        <p>Мы — ваш надежный партнер в мире аренды недвижимости! Более 1000 довольных клиентов уже нашли свое идеальное жилье с нашей помощью.</p>
+        <p>Мы предлагаем гарантию качества, прозрачные условия и полную поддержку на всех этапах аренды. Наши квартиры проходят тщательную проверку, чтобы вы могли чувствовать себя в безопасности и комфорте.</p>
+        <p>Наша миссия — сделать процесс аренды простым и удобным. Доверьтесь нам, и мы найдем для вас идеальный дом!</p>
+    {% endif %}
+    
     <div class="back-button">
-        <a href="{% url 'task-list' %}" class="btn btn-secondary mt-3">Вернуться на главную</a>
+        <a href="{% url 'task-list' %}" class="btn btn-secondary mt-3">
+            {% if CURRENT_LANGUAGE == 'ru' %}Вернуться на главную
+            {% elif CURRENT_LANGUAGE == 'en' %}Back to Home
+            {% elif CURRENT_LANGUAGE == 'kk' %}Басты бетке оралу
+            {% else %}Вернуться на главную{% endif %}
+        </a>
     </div>
 </div>
 {% endblock %}

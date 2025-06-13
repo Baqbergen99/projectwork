@@ -12,6 +12,20 @@ class RegisterForm(UserCreationForm):
         model = User
         fields = ['username', 'email', 'password1', 'password2']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Получаем текущий язык из запроса, если он есть
+        request = kwargs.get('request')
+        if request and hasattr(request, 'session'):
+            from django.conf import settings
+            from .translations import TRANSLATIONS
+            language = request.session.get('django_language', settings.LANGUAGE_CODE)
+            translations = TRANSLATIONS.get(language, TRANSLATIONS['ru'])
+            
+            # Обновляем сообщения об ошибках для полей пароля
+            self.fields['password1'].help_text = translations.get('password_min_length')
+            self.fields['password2'].help_text = translations.get('password_mismatch')
+
     def clean_password1(self):
         password1 = self.cleaned_data.get('password1')
         # Условия для пароля
@@ -22,7 +36,16 @@ class RegisterForm(UserCreationForm):
             'special': bool(re.search(r'[!@#$%^&*(),.?":{}|<>]', password1)),
         }
         if not all(conditions.values()):
-            self.add_error('password1', 'Пароль не соответствует требованиям.')
+            # Получаем текущий язык
+            from django.conf import settings
+            from .translations import TRANSLATIONS
+            request = getattr(self, 'request', None)
+            language = 'ru'
+            if request and hasattr(request, 'session'):
+                language = request.session.get('django_language', settings.LANGUAGE_CODE)
+            translations = TRANSLATIONS.get(language, TRANSLATIONS['ru'])
+            
+            self.add_error('password1', translations.get('password_too_short'))
             self.conditions = conditions  # Сохраняем условия для отображения в шаблоне
         return password1
 

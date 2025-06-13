@@ -1,22 +1,59 @@
 {% extends 'base.html' %}
-{% block title %}Вход{% endblock %}
+{% block title %}
+    {% if CURRENT_LANGUAGE == 'ru' %}Вход
+    {% elif CURRENT_LANGUAGE == 'en' %}Login
+    {% elif CURRENT_LANGUAGE == 'kk' %}Кіру
+    {% else %}Вход{% endif %}
+{% endblock %}
 {% block content %}
-<h2 class="mt-4">Вход</h2>
+<h2 class="mt-4">
+    {% if CURRENT_LANGUAGE == 'ru' %}Вход
+    {% elif CURRENT_LANGUAGE == 'en' %}Login
+    {% elif CURRENT_LANGUAGE == 'kk' %}Кіру
+    {% else %}Вход{% endif %}
+</h2>
 
 {% if form.errors %}
     <div class="alert alert-danger">
-        Неверный email или пароль.
+        {% if CURRENT_LANGUAGE == 'ru' %}Неверный email или пароль.
+        {% elif CURRENT_LANGUAGE == 'en' %}Invalid email or password.
+        {% elif CURRENT_LANGUAGE == 'kk' %}Қате email немесе құпия сөз.
+        {% else %}Неверный email или пароль.{% endif %}
     </div>
 {% endif %}
 
 <form method="post">
     {% csrf_token %}
-    <p><label for="id_username">Email:</label>
-       <input type="email" name="username" id="id_username" required></p>
-    <p><label for="id_password">Пароль:</label>
-       <input type="password" name="password" id="id_password" required></p>
-    <button type="submit" class="btn btn-primary">Войти</button>
+    <p>
+        <label for="id_username">
+            {% if CURRENT_LANGUAGE == 'ru' %}Email:
+            {% elif CURRENT_LANGUAGE == 'en' %}Email:
+            {% elif CURRENT_LANGUAGE == 'kk' %}Email:
+            {% else %}Email:{% endif %}
+        </label>
+        <input type="email" name="username" id="id_username" required>
+    </p>
+    <p>
+        <label for="id_password">
+            {% if CURRENT_LANGUAGE == 'ru' %}Пароль:
+            {% elif CURRENT_LANGUAGE == 'en' %}Password:
+            {% elif CURRENT_LANGUAGE == 'kk' %}Құпия сөз:
+            {% else %}Пароль:{% endif %}
+        </label>
+        <input type="password" name="password" id="id_password" required>
+    </p>
+    <button type="submit" class="btn btn-primary">
+        {% if CURRENT_LANGUAGE == 'ru' %}Войти
+        {% elif CURRENT_LANGUAGE == 'en' %}Login
+        {% elif CURRENT_LANGUAGE == 'kk' %}Кіру
+        {% else %}Войти{% endif %}
+    </button>
 </form>
 
-<p class="mt-3">Нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь</a>.</p>
+<p class="mt-3">
+    {% if CURRENT_LANGUAGE == 'ru' %}Нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь</a>.
+    {% elif CURRENT_LANGUAGE == 'en' %}No account? <a href="{% url 'register' %}">Register here</a>.
+    {% elif CURRENT_LANGUAGE == 'kk' %}Аккаунтыңыз жоқ па? <a href="{% url 'register' %}">Мұнда тіркеліңіз</a>.
+    {% else %}Нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь</a>.{% endif %}
+</p>
 {% endblock %}
