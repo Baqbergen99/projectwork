@@ -20,12 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-dqp81_t9vuaojp0s1aap3c8n7^v^dcj-z13m+dxy#f8-4#3a8)'
+import os
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dqp81_t9vuaojp0s1aap3c8n7^v^dcj-z13m+dxy#f8-4#3a8)')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # Позже замените на ваш домен, например, ['yourapp.onrender.com']
 
 
 # Application definition
@@ -132,7 +133,8 @@ LOCALE_PATHS = [
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]

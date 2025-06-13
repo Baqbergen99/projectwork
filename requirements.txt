@@ -1,3 +1,8 @@
-Django
-djangorestframework
-requests
+asgiref==3.8.1
+Django==5.2
+django-modeltranslation==0.19.15
+djangorestframework==3.16.0
+gunicorn==23.0.0
+packaging==25.0
+sqlparse==0.5.3
+tzdata==2025.2
